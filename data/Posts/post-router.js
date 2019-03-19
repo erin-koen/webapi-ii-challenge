@@ -45,60 +45,58 @@ router.get("/", (req, res) => {
 router.get("/:id", (req, res) => {
   const { id } = req.params;
   console.log("This is the id:", id);
-  !Posts.findById(id)
-    ? res.status(404).json({
-        message: "The post with the specified ID does not exist."
-      })
-    : Posts.findById(id)
-        .then(post => {
-          res.status(200).json(post);
-        })
-        .catch(err => {
-          res
-            .status(500)
-            .json({ error: "The post information could not be retrieved." });
-        });
+  Posts.findById(id)
+    .then(post => {
+      post.length > 0
+        ? res.status(200).json(post)
+        : res
+            .status(404)
+            .json({ message: "the post with the specified id does not exist" });
+    })
+    .catch(err => {
+      res
+        .status(500)
+        .json({ error: "The post information could not be retrieved" });
+    });
 });
 
 //Removes the post with the specified ID and returns the deleted post object. Might need add'l calls to satisfy that requirement
 
 router.delete("/:id", (req, res) => {
   const { id } = req.params;
-  Posts.findById(id)
-    .then(post => {
-      !post.id
-        ? res.status(404).json({
-            message: "The post with the specified ID does not exist."
+  Posts.findById(id).then(post =>
+    post.length < 1
+      ? res.status(404).json({
+          message: "The post with the specified ID does not exist."
+        })
+      : Posts.remove(post.id)
+          .then(post => {
+            res.status(200).json({ post: "deleted" });
           })
-        : res.status(200).json(post);
-    })
-    .then(id => {
-      Posts.remove(id).then(post => {
-        console.log(post.id, "deleted");
-      });
-    })
-    .catch(err => {
-      res.status(500).json({ error: "The post could not be removed" });
-    });
+          .catch(err => {
+            res.status(500).json({ error: "The post could not be removed" });
+          })
+  );
 });
 
 //Updates the post with the specified ID using data from request body. Returns the modified document, not the original
 
 router.put("/:id", (req, res) => {
   const { id } = req.params;
+  console.log("this is the id:", id);
   const { title, contents } = req.body;
-  !title || !contents
+  return (!title || !contents)
     ? res.status(400).json({
         errorMessage: "Please provide title and contents for the post."
       })
-      
     : Posts.update(id, { title, contents })
-        .then(post => res.status(200).json({ post }))
+        .then(post => 
+            post.length >1 ?
+            res.status(200).json( post ) : res.status(404).json({error: "A post with that ID does not exist"})
         .catch(err =>
           res
             .status(500)
             .json({ error: "The post information could not be modified." })
-        );
-});
+        ))});
 
 module.exports = router;
