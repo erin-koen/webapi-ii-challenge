@@ -89,11 +89,16 @@ router.put("/:id", (req, res) => {
     ? res.status(400).json({
         errorMessage: "Please provide title and contents for the post."
       })
-    : Posts.update(id, { title, contents }).then(post => 
-        post === 0 ?
-        res.status(404).json({ message: "The post with the specified ID does not exist."})
-        : res.status(200).json(Posts.post))
-    
+    : Posts.update(id, { title, contents }).then(post =>
+        post === 0
+          ? res
+              .status(404)
+              .json({
+                message: "The post with the specified ID does not exist."
+              })
+          : Posts.findById(id).then(post =>
+            res.status(200).json(post))
+      );
 });
 
 module.exports = router;
