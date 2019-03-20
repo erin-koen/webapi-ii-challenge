@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors")
 
 //need to import routers here
 const postRouter = require('./data/Posts/post-router.js')
@@ -7,6 +8,7 @@ const server = express();
 
 //enable the json function
 server.use(express.json());
+server.use(cors())
 
 server.get("/", (req, res) => {
   res.send(`
